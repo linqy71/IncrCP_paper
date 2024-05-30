@@ -1,6 +1,6 @@
-# LSECP:A high-performance and space-efficient checkpoint system based on LSE-Tree for recommendation models
+# IncrCP: Decomposing and Orchestrating Incremental Checkpoints for Effective Recommendation Model Training
 
-This package includes the source codes and testing scripts in the paper *LSECP:A high-performance and space-efficient checkpoint system based on LSE-Tree for recommendation models*.
+This package includes the source codes and testing scripts in the paper *IncrCP: Decomposing and Orchestrating Incremental Checkpoints for Effective Recommendation Model Training*.
 
 ```
 .
