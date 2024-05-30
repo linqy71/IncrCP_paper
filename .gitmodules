@@ -1,3 +1,6 @@
+[submodule "src/two_d_chunk"]
+	path = src/two_d_chunk
+	url = https://github.com/linqy71/two_d_chunk.git
 [submodule "models/dlrm"]
 	path = models/dlrm
 	url = https://github.com/linqy71/dlrm.git
@@ -9,6 +12,3 @@
 	path = models/pnn
 	url = https://github.com/linqy71/CTR_Algorithm.git
 	branch = pnn
-[submodule "src/two_d_chunk"]
-	path = src/two_d_chunk
-	url = https://github.com/linqy71/two_d_chunk.git
