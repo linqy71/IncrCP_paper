@@ -11,37 +11,35 @@ This package includes the source codes and testing scripts in the paper *IncrCP:
 │   ├── naive_ckpt.py           # Checkpointing interfaces of Naive Incre and Check-N-Run
 ├── models
 │   ├── deepfm                  
-│   │   └── test_ckpt.sh        # script for testing checkpointing
+│   │   └── test_ckpt.sh        # Checkpoint construction test
 │   │   └── ...
 │   ├── dlrm                    
-│   │   └── test_ckpt.sh        # script for testing checkpointing
+│   │   └── test_ckpt.sh        # Checkpoint construction test
 │   │   └── ...
 │   └── pnn                     
-│   │   └── test_ckpt.sh        # script for testing checkpointing
+│   │   └── test_ckpt.sh        # Checkpoint construction test
 │   │   └── ...
 ├── README.md
 ├── requirements.txt            # Python package requirements
 └── scripts                     
     ├── load_ckpt.py
     ├── test_deepfm
-    │   └── test_load.sh        # script for testing recovery
+    │   └── test_load.sh        # Recovery test
     ├── test_dlrm
-    │   └── test_load.sh        # script for testing recovery
+    │   └── test_load.sh        # Recovery test
     └── test_pnn
-        └── test_load.sh        # script for testing recovery
+        └── test_load.sh        # Recovery test
 
 ```
 
-## Part 1: Getting Started Guide
+## Part 1: Preparations
 
-clone this repo with:
+1. clone this repo with:
 ```
 git clone --recurse-submodules 
 ```
 
-### Environment Setups
-
-1. install package requirements
+2. install package requirements
 ```
 conda create --name incrcp python=3.8
 pip install -r requirements.txt
@@ -49,15 +47,62 @@ pip install -r requirements.txt
 export CUDA_VISIBLE_DEVICES=0,1,2,3
 ```
 
-2. install 2DChunk
+3. install 2DChunk
 
 ```
 cd src
 python setup.py install
 ```
 
-export the directory of interfaces to PYTHONPATH
-```export PYTHONPATH=/path/to/IncrCP_paper/src```
+4. export the directory of interfaces to PYTHONPATH
 
-## Part 2: Run checkpoint tests
+```
+export PYTHONPATH=/path/to/IncrCP_paper/src
+```
 
+5. Download [Criteo Kaggle Display Advertising Challenge Dataset](https://ailab.criteo.com/ressources/).
+
+
+## Part 2: Result Reproduction
+
+### Overall Performance reproduction
+
+Here is our overall performance results when training DLRM. 
+![overall performance of DLRM](./images/overall_perfromance_dlrm.jpg)
+
+To reproduce this, first test `checkpoint construction` and then test `recovery`.
+Before Runing the scripts, make sure paths in the scripts is replaced to your own local paths.
+
+** 1. test checkpoint construction **
+
+```
+cd models/dlrm
+bash test_ckpt.sh
+```
+
+** 2. test recovery **
+
+```
+cd scripts
+bash test_dlrm/test_load.sh
+```
+
+### Reproduction for other results
+
+To reproduce the results for DeepFM and PNN, the steps are similar:
+```
+cd models/deepfm
+bash test_ckpt.sh 1 1 1
+
+cd scripts
+bash test_deepfm/test_load.sh 1 1 1
+```
+Parameters of the scripts indicates for enabling or disabling a specific method.
+See the scripts for details.
+```
+cd models/pnn
+bash test_ckpt.sh 1 1 1
+
+cd scripts
+bash test_pnn/test_load.sh 1 1 1
+```
