@@ -36,7 +36,9 @@ This package includes the source codes and testing scripts in the paper *IncrCP:
 
 1. clone this repo with:
 ```
-git clone --recurse-submodules 
+git clone --recurse-submodules https://github.com/linqy71/IncrCP_paper.git
+cd IncrCP_paper
+export INCRCP_PATH=$(pwd)
 ```
 
 2. install package requirements
@@ -50,14 +52,14 @@ export CUDA_VISIBLE_DEVICES=0,1,2,3
 3. install 2DChunk
 
 ```
-cd src
+cd $INCRCP_PATH/src
 python setup.py install
 ```
 
 4. export the directory of interfaces to PYTHONPATH
 
 ```
-export PYTHONPATH=/path/to/IncrCP_paper/src
+export PYTHONPATH=$PYTHONPATH:$INCRCP_PATH/src
 ```
 
 5. Download [Criteo Kaggle Display Advertising Challenge Dataset](https://ailab.criteo.com/ressources/).
@@ -76,14 +78,14 @@ Before Runing the scripts, make sure paths in the scripts is replaced to your ow
 ** 1. test checkpoint construction **
 
 ```
-cd models/dlrm
+cd $INCRCP_PATH/models/dlrm
 bash test_ckpt.sh
 ```
 
 ** 2. test recovery **
 
 ```
-cd scripts
+cd $INCRCP_PATH/scripts
 bash test_dlrm/test_load.sh
 ```
 
@@ -91,18 +93,18 @@ bash test_dlrm/test_load.sh
 
 To reproduce the results for DeepFM and PNN, the steps are similar:
 ```
-cd models/deepfm
+cd $INCRCP_PATH/models/deepfm
 bash test_ckpt.sh 1 1 1
 
-cd scripts
+cd $INCRCP_PATH/scripts
 bash test_deepfm/test_load.sh 1 1 1
 ```
 Parameters of the scripts indicates for enabling or disabling a specific method.
 See the scripts for details.
 ```
-cd models/pnn
+cd $INCRCP_PATH/models/pnn
 bash test_ckpt.sh 1 1 1
 
-cd scripts
+cd $INCRCP_PATH/scripts
 bash test_pnn/test_load.sh 1 1 1
 ```
