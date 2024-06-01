@@ -67,31 +67,35 @@ export PYTHONPATH=$PYTHONPATH:$INCRCP_PATH/src
 
 ## Part 2: Result Reproduction
 
-### Overall Performance reproduction
+### Overall Performance evaluation reproduction
 
-Here is our overall performance results when training DLRM. 
+Here is our overall performance evaluation results when training DLRM. 
 ![overall performance of DLRM](./images/overall_perfromance_dlrm.jpg)
 
 To reproduce this, first test `checkpoint construction` and then test `recovery`.
+
 Before Runing the scripts, make sure paths in the scripts is replaced to your own local paths.
 
-** 1. test checkpoint construction **
+**1. test checkpoint construction**
 
 ```
 cd $INCRCP_PATH/models/dlrm
 bash test_ckpt.sh
 ```
 
-** 2. test recovery **
+**2. test recovery**
 
 ```
 cd $INCRCP_PATH/scripts
 bash test_dlrm/test_load.sh
 ```
 
-### Reproduction for other results
+### Reproduction for other evaluations
+We provide a [sampled Kaggle dataset](https://drive.google.com/file/d/1Nl5TyzbivbonrvFB-I_vLMqxMtfGT_c1/view?usp=share_link) for training DeepFM and PNN with proper model size to fit on our hardware constraints. 
 
-To reproduce the results for DeepFM and PNN, the steps are similar:
+Download the dataset and correct the `dataset_path` in `models/deepfm/test_ckpt.sh` and `models/pnn/test_ckpt.sh`, as well as other parameters related to directories.
+
+To reproduce the evaluations for DeepFM and PNN, the steps are similar:
 ```
 cd $INCRCP_PATH/models/deepfm
 bash test_ckpt.sh 1 1 1
