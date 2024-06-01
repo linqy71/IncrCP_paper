@@ -103,7 +103,7 @@ bash test_ckpt.sh 1 1 1
 cd $INCRCP_PATH/scripts
 bash test_deepfm/test_load.sh 1 1 1
 ```
-Parameters of the scripts indicates for enabling or disabling a specific method.
+Parameters of the scripts indicate for enabling or disabling a specific method.
 See the scripts for details.
 ```
 cd $INCRCP_PATH/models/pnn
