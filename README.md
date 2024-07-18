@@ -36,9 +36,7 @@ This package includes the source codes and testing scripts in the paper *IncrCP:
 
 1. clone this repo with:
 ```
-git clone --recurse-submodules https://github.com/linqy71/IncrCP_paper.git
-cd IncrCP_paper
-export INCRCP_PATH=$(pwd)
+git clone --recurse-submodules 
 ```
 
 2. install package requirements
@@ -52,14 +50,14 @@ export CUDA_VISIBLE_DEVICES=0,1,2,3
 3. install 2DChunk
 
 ```
-cd $INCRCP_PATH/src
+cd src
 python setup.py install
 ```
 
 4. export the directory of interfaces to PYTHONPATH
 
 ```
-export PYTHONPATH=$PYTHONPATH:$INCRCP_PATH/src
+export PYTHONPATH=/path/to/IncrCP_paper/src
 ```
 
 5. Download [Criteo Kaggle Display Advertising Challenge Dataset](https://ailab.criteo.com/ressources/).
@@ -67,48 +65,40 @@ export PYTHONPATH=$PYTHONPATH:$INCRCP_PATH/src
 
 ## Part 2: Result Reproduction
 
-### Overall Performance evaluation reproduction
+### Overall Performance reproduction
 
-Here is our overall performance evaluation results when training DLRM. 
-![overall performance of DLRM](./images/overall_perfromance_dlrm.jpg)
+Here is our overall performance results on SSD. 
 
 To reproduce this, first test `checkpoint construction` and then test `recovery`.
 
-Before Runing the scripts, make sure paths in the scripts is replaced to your own local paths.
-
-**1. test checkpoint construction**
+** 1. test checkpoint construction **
 
 ```
-cd $INCRCP_PATH/models/dlrm
+cd models/dlrm # or you can enter other models' directory, such as models/deepfm, models/pnn
 bash test_ckpt.sh
 ```
+Before Runing scripts, make sure paths in the scripts is replaced to your own local paths.
+Modify the following parameters to your need in `test_ckpt.sh`:
+```
+ckpt_dir=/path/to/save/checkpoints  # directory to save checkpoints
+raw_data_file="/mnt/ssd/dataset/kaggle/train.txt"   # kaggle dataset path
+processd_data="/mnt/ssd/dataset/kaggle/kaggleAdDisplayChallenge_processed.npz"  # kaggle dataset path
+check_freq=10   # checkpoint frequency: number of iterations
+num_batches=1500  # numebr of total training iterations
+```
 
-**2. test recovery**
+** 2. test recovery **
 
 ```
-cd $INCRCP_PATH/scripts
-bash test_dlrm/test_load.sh
+cd scripts
+bash test_dlrm/test_load.sh 
 ```
-
-### Reproduction for other evaluations
-We provide a [sampled Kaggle dataset](https://drive.google.com/file/d/1Nl5TyzbivbonrvFB-I_vLMqxMtfGT_c1/view?usp=share_link) for training DeepFM and PNN with proper model size to fit on our hardware constraints. 
-
-Download the dataset and correct the `dataset_path` in `models/deepfm/test_ckpt.sh` and `models/pnn/test_ckpt.sh`, as well as other parameters related to directories.
-
-To reproduce the evaluations for DeepFM and PNN, the steps are similar:
+Before Runing scripts, make sure paths in the scripts is replaced to your own local paths.
+Modify the following parameters in `test_load.sh`:
 ```
-cd $INCRCP_PATH/models/deepfm
-bash test_ckpt.sh 1 1 1
-
-cd $INCRCP_PATH/scripts
-bash test_deepfm/test_load.sh 1 1 1
-```
-Parameters of the scripts indicate for enabling or disabling a specific method.
-See the scripts for details.
-```
-cd $INCRCP_PATH/models/pnn
-bash test_ckpt.sh 1 1 1
-
-cd $INCRCP_PATH/scripts
-bash test_pnn/test_load.sh 1 1 1
+ckpt_dir="/mnt/3dx/checkpoint"  # the same as that in test_ckpt.sh
+reset=100                      # to reset baseline ckpt of IncrCP
+max_version=150               # number of checkpoints created after running test_ckpt.sh
+result_path=/path/to/store/experimental_results/dlrm  # output path
+ckpt_freq=10                  # the same as that in test_ckpt.sh
 ```
