@@ -76,18 +76,20 @@ export PYTHONPATH=/path/to/IncrCP_paper/src
 
 ### Overall Performance reproduction
 
-Here is our overall performance results on SSD. 
+Here is our main overall performance results on different storage devices. 
+
+![](./images/overall_perfromance_dlrm.jpg)
 
 To reproduce this, first test `checkpoint construction` and then test `recovery`.
 
 **1. test checkpoint construction**
 
 ```
-cd models/dlrm # or you can enter other models' directory, such as models/deepfm, models/pnn
+cd models/dlrm
 bash test_ckpt.sh
 ```
 Before Runing scripts, make sure paths in the scripts is replaced to your own local paths.
-Modify the following parameters to your need in `test_ckpt.sh`:
+Modify the following definitions to your need in `test_ckpt.sh`:
 ```
 ckpt_dir=/path/to/save/checkpoints  # directory to save checkpoints
 raw_data_file="/mnt/ssd/dataset/kaggle/train.txt"   # kaggle dataset path
