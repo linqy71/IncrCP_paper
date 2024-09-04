@@ -4,3 +4,4 @@ build/
 dist/
 experimental_results/
 *outputs/
+.vscode/

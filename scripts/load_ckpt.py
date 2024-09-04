@@ -40,15 +40,10 @@ def recover_emb(args):
         emb_time_start = time.time()
         emb = method.load_emb(version - 1)
         emb_time = time.time() - emb_time_start
-    elif args.ckpt_method == "diff":
+    else :
         method = NaiveCkpt(ckpt_dir, emb_names)
         emb_time_start = time.time()
-        emb = method.load_emb(version,"diff")
-        emb_time = time.time() - emb_time_start
-    elif args.ckpt_method == "naive_incre":
-        method = NaiveCkpt(args.ckpt_dir + "/" + args.ckpt_method, emb_names)
-        emb_time_start = time.time()
-        emb = method.load_emb(version, args.ckpt_method)
+        emb = method.load_emb(version, args.ckpt_method, args.ckpt_freq)
         emb_time = time.time() - emb_time_start
     # emb_time = time.time() - emb_time_start
     print(emb_time)

@@ -3,6 +3,7 @@ import sys
 import time
 import os
 import torch
+import copy
 
 
 class NaiveCkpt:
@@ -13,7 +14,7 @@ class NaiveCkpt:
     def __init__(
         self,
         db_root_path,
-        emb_names,
+        emb_names
     ):
         self.db_root_path = db_root_path
         self.emb_names = emb_names
@@ -21,33 +22,60 @@ class NaiveCkpt:
         for name in emb_names:
             path = db_root_path + "/" + name
             if not os.path.exists(path):
-                os.makedirs(path)
+                os.makedirs(path, exist_ok=True)
             self.file_root_path.append(path)
         self.diff_hist = []
     
-    def ckpt_emb(self, indexes, model, cur_iter):
+    def ckpt_emb(self, diff_view, model, cur_iter):
+        indexes = torch.from_numpy(diff_view.copy())
+      
         if len(indexes) != len(self.emb_names):
+            print(len(indexes), len(self.emb_names))
             sys.exit("ERROR: Given indexes do not match with model parameters.")
         
         # look up updated embedding vectors in batches
         list_time = 0
         save_time = 0
+        snapshot_time = 0
         table_size = 0
         update_size = 0
         for i, name in enumerate(self.emb_names):
             updated_emb = {}
             emb_table = model.state_dict()[name]
-            indices_tensor = indexes[i].clone().detach().to(emb_table.device)
-            updated_emb_batch = emb_table[indices_tensor].detach().to('cpu')
-            updated_emb_batch.numpy()
+            if len(indexes[i]) > (8000 * 1024): # too large, split
+                index = indexes[i]
+                num_parts = 10
+                part_length = len(index) // num_parts
+                parts = [index[i * part_length:(i + 1) * part_length] for i in range(num_parts)]
+                for p in parts:
+                    snapshot = time.time()
+                    indices_tensor = p.detach().to(emb_table.device)
+                    updated_emb_batch = emb_table[indices_tensor].detach().to('cpu')
+                    updated_emb_batch.numpy()
+                    indices_tensor = indices_tensor.to('cpu').numpy()
+                    snapshot = time.time() - snapshot
+                    snapshot_time += snapshot
+                    lt = time.time()
+                    for k, idx in enumerate(p):
+                        idx = int(idx)
+                        updated_emb[idx] = updated_emb_batch[k].tolist()
+                    lt = time.time() - lt
+                    list_time += lt
+            else :
+                snapshot = time.time()
+                indices_tensor = indexes[i].detach().to(emb_table.device)
+                updated_emb_batch = emb_table[indices_tensor].detach().to('cpu')
+                updated_emb_batch.numpy()
+                indices_tensor = indices_tensor.to('cpu').numpy()
+                snapshot = time.time() - snapshot
+                snapshot_time += snapshot
             
-            indices_tensor = indices_tensor.to('cpu').numpy()
-            lt = time.time()
-            for k, idx in enumerate(indexes[i]):
-                idx = int(idx)
-                updated_emb[idx] = updated_emb_batch[k].tolist()
-            lt = time.time() - lt
-            list_time += lt
+                lt = time.time()
+                for k, idx in enumerate(indexes[i]):
+                    idx = int(idx)
+                    updated_emb[idx] = updated_emb_batch[k].tolist()
+                lt = time.time() - lt
+                list_time += lt
             update_size += len(updated_emb.keys())
             table_size += len(emb_table)
         
@@ -58,7 +86,8 @@ class NaiveCkpt:
                 file.write(data)
             t = time.time() - t
             save_time += t
-        return update_size / table_size, list_time, save_time
+        return update_size / table_size, list_time, save_time, snapshot_time
+     
     
     def load_emb(self, version, method="diff", freq=10):
         result = {}
@@ -66,6 +95,8 @@ class NaiveCkpt:
             cur_iter = version * freq
             for i, root in enumerate(self.file_root_path):
                 file_name = root + "/" + str(cur_iter) + ".cp"
+                if not os.path.exists(file_name):
+                    return result
                 with open(file_name, 'rb') as file:
                     data = file.read()
                     emb = msgpack.unpackb(data, strict_map_key=False)

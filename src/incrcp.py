@@ -4,6 +4,7 @@ import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
 import os
+import copy
 
 import py_tdchunk
 
@@ -71,7 +72,7 @@ class IncrCP:
         self.db_root_path = db_root_path
         cur_path = self.db_root_path + "/" + str(self.base_version)
         if not os.path.exists(cur_path):
-            os.makedirs(cur_path)
+            os.makedirs(cur_path, exist_ok=True)
         for name in emb_names:
             self.db_names.append(cur_path + '/' + name)
         # print(self.db_names)
@@ -83,71 +84,47 @@ class IncrCP:
     def finish(self):
         self.db_manager.releasedb()
 
-    # def ckpt_emb(self, indexes, model, cur_iter):
-    #     if len(indexes) != len(self.emb_names):
-    #         print(indexes)
-    #         print(len(indexes))
-    #         sys.exit("ERROR: Given indexes do not match with model parameters.")
+
+    def ckpt_emb(self, diff_view, model, cur_iter):
+        indexes = torch.from_numpy(diff_view.copy())
         
-    #     save_time = 0
-    #     list_time = 0
-    #     # look up updated embedding vectors in batches
-    #     with ThreadPoolExecutor(max_workers=(len(self.emb_names))) as executor:
-    #         futures = []
-    #         for i, name in enumerate(self.emb_names):
-    #             updated_emb = {}
-    #             emb_table = model.state_dict()[name]
-    #             indices_tensor = indexes[i].clone().detach().to(emb_table.device)
-    #             updated_emb_batch = emb_table[indices_tensor].detach().to('cpu')
-    #             updated_emb_batch.numpy()
-    #             indices_tensor = indices_tensor.to('cpu').numpy()
-                
-    #             lt = time.time()
-    #             for k, idx in enumerate(indexes[i]):
-    #                 idx = int(idx)
-    #                 updated_emb[idx] = updated_emb_batch[k].tolist()
-    #             lt = time.time() - lt
-    #             list_time += lt
-
-    #             t = time.time()
-    #             future = executor.submit(construct, self.db_root_path, name, cur_iter, updated_emb, self.db_manager, i)
-    #             futures.append(future)
-    #             t = time.time() - t
-    #             save_time += t
-
-    #     return 0, list_time, save_time
-
-    def ckpt_emb(self, indexes, model, cur_iter):
         if len(indexes) != len(self.emb_names):
             print(indexes)
             print(len(indexes))
             sys.exit("ERROR: Given indexes do not match with model parameters.")
         
+        table_size = 0
+        update_size = 0
         save_time = 0
         list_time = 0
+        snapshot_time = 0
         for i, name in enumerate(self.emb_names):
             updated_emb = {}
             emb_table = model.state_dict()[name]
-            sorted_indexes = sorted(indexes[i])
-            indices_tensor = sorted_indexes.clone().detach().to(emb_table.device)
+            snapshot = time.time()
+            indices_tensor = indexes[i].detach().to(emb_table.device)
             updated_emb_batch = emb_table[indices_tensor].detach().to('cpu')
             updated_emb_batch.numpy()
             indices_tensor = indices_tensor.to('cpu').numpy()
+            snapshot = time.time() - snapshot
+            snapshot_time += snapshot
             
             lt = time.time()
-            updated_emb = {int(idx): emb_val.tolist() for idx, emb_val in zip(sorted_indexes, updated_emb_batch)}
-            # for k, idx in enumerate(indexes[i]):
-            #     idx = int(idx)
-            #     updated_emb[idx] = updated_emb_batch[k].tolist()
+            # updated_emb = {int(idx): emb_val.tolist() for idx, emb_val in zip(indices_tensor, updated_emb_batch)}
+            for k, idx in enumerate(indexes[i]):
+                idx = int(idx)
+                updated_emb[idx] = updated_emb_batch[k].tolist()
             lt = time.time() - lt
             list_time += lt
+            update_size += len(updated_emb.keys())
+            table_size += len(emb_table)
 
             t = time.time()
             construct(self.db_names[i], updated_emb, self.db_manager, i)
             t = time.time() - t
             save_time += t
 
-        return 0, list_time, save_time
+        return update_size / table_size, list_time, save_time, snapshot_time
     
     def load_emb(self, ckpt_version):
         result = {}
@@ -165,7 +142,7 @@ class IncrCP:
                         emb = msgpack.unpackb(data, strict_map_key=False)
                         updated_emb.update(emb)
             result[layer_name] = updated_emb
-        print(total_len / 1024 / 1024)
+        print(total_len / 1024 / 1024 / 1024)
         return result
 
     

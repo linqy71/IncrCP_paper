@@ -1,6 +1,7 @@
 import torch
 import copy
 import os
+import numpy as np
 
 
 class Tracker:
@@ -13,11 +14,14 @@ class Tracker:
     
     # indexes corresponds to multiple layers
     def add(self, indexes):
+        if isinstance(indexes, list): # random dataset
+            assert(len(indexes)==1)
+            indexes = torch.stack([indexes[0]])
         if len(self.diff_view) == 0:
-            self.diff_view = copy.deepcopy(indexes)
+            self.diff_view = indexes.numpy().copy()
         else :
-            self.diff_view = [torch.unique(torch.cat((t1, t2))).sort().values 
-                                    for t1, t2 in zip(self.diff_view, indexes)]
+            self.diff_view = np.concatenate((self.diff_view, indexes), axis=1)
+            # print(self.diff_view.shape)
     
     def reset(self):
         self.diff_view = []

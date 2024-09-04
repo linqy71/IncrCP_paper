@@ -36,13 +36,22 @@ This package includes the source codes and testing scripts in the paper *IncrCP:
 
 1. clone this repo with:
 ```
-git clone --recurse-submodules 
+git clone --recurse-submodules https://github.com/linqy71/IncrCP_paper.git
 ```
 
 2. install package requirements
 ```
 conda create --name incrcp python=3.8
 pip install -r requirements.txt
+
+git clone https://gitee.com/lgmcode/msgpack-c.git -b cpp_master
+cd msgpack-c
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=/PATH/TO/msgpack-c ..
+cmake --build . --target install
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/PATH/TO/msgpack-c/lib
+export CPATH=$CPATH:/PATH/TO/msgpack-c/include
 
 export CUDA_VISIBLE_DEVICES=0,1,2,3
 ```
@@ -71,7 +80,7 @@ Here is our overall performance results on SSD.
 
 To reproduce this, first test `checkpoint construction` and then test `recovery`.
 
-** 1. test checkpoint construction **
+**1. test checkpoint construction**
 
 ```
 cd models/dlrm # or you can enter other models' directory, such as models/deepfm, models/pnn
@@ -87,7 +96,7 @@ check_freq=10   # checkpoint frequency: number of iterations
 num_batches=1500  # numebr of total training iterations
 ```
 
-** 2. test recovery **
+**2. test recovery**
 
 ```
 cd scripts
